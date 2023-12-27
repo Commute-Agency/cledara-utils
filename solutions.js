@@ -1,6 +1,4 @@
 window.onload = init();
-// window.onpopstate = init();
-window.onpopstate = () => window.scrollTO(0, 0);
 
 function init() {
   const gsap = window.gsap;
@@ -9,287 +7,14 @@ function init() {
 
   gsap?.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
-  // animateCurtain();
-  bannerAnimation();
-  animateHeroSection();
   testimonialsNavigation();
   initMarquee();
-  stepsGuide();
-  initStickyConfig();
   stickyFeatures();
-  scrollHeadingAnimation();
   stepLine();
   initSwiperSlider();
 }
 
-function animateCurtain() {
-  // Initialize animations for the web page
-  if ("scrollRestoration" in window.history) {
-    window.history.scrollRestoration = "auto";
-  }
-  // avoidPageScroll(true);
-
-  loadingAnimation();
-}
-
-function loadingAnimation() {
-  const loadEl = document.querySelector("[data-animation-id='loader']");
-
-  if (!loadEl) return;
-
-  // - remove hidden property
-  loadEl.classList.remove("cl-u-hide");
-
-  const masterTl = gsap.timeline();
-
-  const iconAnimation = () => {
-    const logo = loadEl.querySelector("#logo");
-    const icon = logo.querySelector(".icon");
-    const iconCenterDistance = icon.clientWidth / 2 + logo.clientWidth / 2;
-
-    gsap.set(icon, {
-      x: `${iconCenterDistance}px`
-    });
-
-    const animation = gsap.timeline({
-      defaults: { duration: 2, ease: "power3.out" }
-    });
-
-    animation
-      .from(icon.children, {
-        opacity: 0,
-        stagger: 0.09,
-        delay: 0.5
-      })
-      .to(icon, {
-        x: 0
-      });
-
-    return animation;
-  };
-
-  const lettersAnimation = () => {
-    const letters = logo.querySelector(".letters");
-
-    const animation = gsap.fromTo(
-      letters,
-      {
-        clipPath: "polygon(100% 0, 100% 0, 100% 100%, 100% 100%)"
-      },
-      {
-        clipPath: "polygon(0% 0, 100% 0, 100% 100%, 0% 100%)",
-        duration: 1,
-        ease: Power3.easeOut
-      }
-    );
-
-    return animation;
-  };
-
-  const courtainAnimation = () => {
-    const animation = gsap.to(loadEl, {
-      yPercent: -100,
-      duration: 1.5,
-      ease: Power2.easeIn
-    });
-
-    return animation;
-  };
-
-  masterTl
-    .set(".cl-main-wrapper", { visibility: "hidden" })
-    .add(iconAnimation())
-    .set(".cl-main-wrapper", { visibility: "visible" })
-    .addLabel("icon")
-    .add(lettersAnimation(), "icon-=1.5")
-    .add(courtainAnimation(), "icon-=0.5")
-    .duration(2)
-    .then(() => {
-      document.body.dataset.loading = false;
-    });
-
-  window._loadingAnimation = masterTl;
-
-  return masterTl;
-}
-
-function bannerAnimation() {
-  // Handle the banner animation
-  const bannerEl = document.querySelector(".banner_icons-wrapper");
-
-  if (!bannerEl) return;
-
-  const bannerChildren = bannerEl.childNodes;
-
-  const masterTl = gsap
-    .timeline({
-      defaults: {
-        ease: "Power.ease"
-      }
-    })
-    .addLabel("Initial");
-
-  bannerChildren.forEach((child, index) => {
-    const isEven = index % 2 === 0;
-    const yDisplacement = 20;
-
-    masterTl.add(
-      gsap.fromTo(
-        child,
-        {
-          yPercent: isEven ? `-${yDisplacement}` : `${yDisplacement}`
-        },
-        {
-          yPercent: isEven ? `${yDisplacement}` : `-${yDisplacement}`
-        }
-      ),
-      "Initial"
-    );
-  });
-
-  ScrollTrigger.create({
-    trigger: bannerEl.closest("section"),
-    start: "top-=50% center",
-    end: "bottom+=50% center",
-    scrub: 2.5,
-    animation: masterTl
-  });
-}
-
-function animateHeroSection() {
-  const heroSection = document.querySelector(".cl-section.is-hero-home");
-
-  if (!heroSection) return;
-
-  const heroElements = {
-    background: heroSection.querySelector(".cl-section_hero-background"),
-    endTrigger: document.querySelector(".cl-home-presentation_image-wrapper"),
-    // masterTimeline: gsap.timeline(),
-    masterTimeline: window._loadingAnimation
-      ? window._loadingAnimation
-      : gsap.timeline(),
-    imagesTimeline: gsap.timeline()
-  };
-
-  // Media query for responsiveness
-  const mediaQuery = gsap.matchMedia();
-
-  // Add a listener for a minimum width of 600px and initialize animations
-  mediaQuery.add("(min-width: 600px)", initializeAnimations);
-
-  // Initialize animations
-  function initializeAnimations() {
-    heroElements.masterTimeline
-      .add(loadImagesAnimation, "-=0.8")
-      .add(scrollDownAnimation);
-  }
-
-  // Animate the scroll-down effect
-  function scrollDownAnimation() {
-    const scrollTimeline = gsap.timeline();
-
-    // Calculate vertical displacement based on the end trigger element
-    const yDisplacement = heroElements.endTrigger.getBoundingClientRect().top;
-    const XDisplacement = (index, self) =>
-      getCenterFromViewport(self).distanceX +
-      heroElements.endTrigger.getBoundingClientRect().left / 2;
-
-    const defaults = {
-      stagger: -0.025
-    };
-
-    // Set initial positions for background images based on viewport center
-    gsap.set(heroElements.background.children, {
-      y: (index, self) =>
-        getCenterFromViewport(self, heroElements.background).distanceY,
-      x: (index, self) =>
-        getCenterFromViewport(self, heroElements.background).distanceX
-    });
-
-    const animation = scrollTimeline
-      .to(
-        heroElements.background.children,
-        {
-          y: yDisplacement,
-          x: XDisplacement,
-          scale: 0.2,
-          ...defaults
-        },
-        0
-      )
-      .to(
-        heroElements.background.children,
-        {
-          opacity: 0
-        },
-        "80%"
-      );
-
-    // ScrollTrigger for the hero section
-    const scroller = ScrollTrigger.create({
-      trigger: heroSection,
-      start: "top top",
-      end: "bottom bottom",
-      scrub: 2,
-      endTrigger: heroElements.endTrigger,
-      animation
-    });
-
-    return scroller;
-  }
-
-  // Animate the initial loading of images
-  function loadImagesAnimation() {
-    const images = [...heroElements.background.children];
-
-    images.forEach((image, index) => {
-      // Get the distance from the viewport center for each image
-      const { distanceX, distanceY } = getCenterFromViewport(
-        image,
-        heroElements.background
-      );
-
-      // Add animations to the imagesTimeline
-      heroElements.imagesTimeline.from(
-        image,
-        {
-          x: distanceX,
-          y: distanceY,
-          opacity: 0,
-          delay: 0.2 * index,
-          onUpdate: () => {
-            const progress = heroElements.imagesTimeline.progress();
-            progress > 0.2 && avoidPageScroll(true);
-            progress >= 1 && avoidPageScroll(false);
-          }
-        },
-        "initial"
-      );
-
-      return heroElements.imagesTimeline;
-    });
-  }
-}
-
-function buttonAnimation() {
-  // Handle button animations with mouse tracking
-  const buttonsCollection = document.querySelectorAll(".cl-button");
-
-  buttonsCollection.forEach(
-    (button) => (button.onmousemove = (event) => handleMouseTracking(event))
-  );
-}
-
-function solutionsGridAnimation() {
-  // Handle mouse tracking for elements in the solutions grid
-  const gridEl = document.querySelector(".cl-solutions-grid");
-  const gridChildrens = [...gridEl?.childNodes];
-
-  gridChildrens.forEach(
-    (child) => (child.onmousemove = (event) => handleMouseTracking(event))
-  );
-}
-
+/* TESTIMONIALS */
 function testimonialsNavigation() {
   // Get the testimonials section element
   const testimonialsSection = document.querySelector(
@@ -420,6 +145,7 @@ function testimonialsNavigation() {
   arrows.next.onclick = (e) => handleNavigation(e);
 }
 
+/* INFINITE MARQUEE */
 function initMarquee() {
   // Initialize variables
   let xPercent = 0;
@@ -466,17 +192,6 @@ function initMarquee() {
       xPercent += 0.1 * direction;
     };
 
-    // Use ScrollTrigger to create a scroll-based animation
-    // gsap.to(marquee, {
-    //   scrollTrigger: {
-    //     trigger: document.documentElement,
-    //     scrub: 0.5,
-    //     start: 0,
-    //     end: window.innerHeight,
-    //   },
-    //   x: "-100px"
-    // });
-
     // Start the animation loop
     requestAnimationFrame(animate);
   });
@@ -488,245 +203,7 @@ function initMarquee() {
   });
 }
 
-function stepsGuide() {
-  const stepsList = document.querySelector(".cl-section.is-step-guide");
-
-  if (!stepsList) return;
-
-  const props = {
-    container: stepsList.closest(".cl-content_wrapper.is-step-guide"),
-    list: stepsList.closest(".cl-list.is-step-guide"),
-    dropdownCollection: [
-      ...stepsList.querySelectorAll(".cl-dropdown.is-steps-list")
-    ], // Obtener una colección de elementos de desplegable
-    buttons: stepsList.querySelectorAll(".w-dropdown-toggle"),
-    lists: stepsList.querySelectorAll(".w-dropdown-list"),
-    listLength: [...stepsList.querySelectorAll(".cl-dropdown.is-steps-list")]
-      .length, // Obtener la longitud de la lista
-    imagesLinks: [
-      ...stepsList.closest("section").querySelectorAll(".w-tab-menu a")
-    ],
-    activeIndex: 0, // Índice activo inicial
-    ACTIVE_CLASS: "w--open", // Clase activa para el desplegable abierto
-    scroller: null,
-    mediaQuery: gsap.matchMedia(),
-    isScrollable: true
-  };
-
-  let {
-    container,
-    dropdownCollection,
-    listLength,
-    activeIndex,
-    ACTIVE_CLASS,
-    imagesLinks,
-    scroller,
-    mediaQuery,
-    isScrollable
-  } = props;
-
-  init(); // Inicializar
-
-  function init() {
-    isScrollable = JSON.parse(stepsList.dataset.scroll);
-    mediaQuery.add("(min-width: 991px)", animate);
-  }
-
-  function animate() {
-    const lengthDuration = listLength * window.innerHeight * 0.8;
-
-    dropdownCollection.forEach((dropdown, index) => {
-      const scrollLenght = lengthDuration / listLength;
-      const scrollStart = Math.round(index == 0 ? 0 : scrollLenght * index);
-      const scrollEnds = Math.round(
-        index == 0 ? scrollLenght : scrollStart + scrollLenght
-      );
-
-      dropdown;
-
-      if (isScrollable) {
-        dropdown.style.pointerEvents = "none";
-        dropdown.parentElement.onclick = () => scrollToStep(index);
-
-        gsap.to(dropdown, {
-          scrollTrigger: {
-            id: `dropdown-${index}`,
-            trigger: container,
-            start: `top+=${scrollStart}px center`,
-            end: `top+=${scrollEnds}px center`,
-            onToggle: () => handleToggle(index)
-          }
-        });
-      }
-
-      dropdown.parentElement.onclick = () => handleToggle(index);
-    });
-
-    // Scrolltriger creted to pin the container
-    scroller =
-      isScrollable &&
-      ScrollTrigger.create({
-        trigger: container,
-        start: `bottom+=40px bottom`,
-        end: `bottom+=${lengthDuration}px bottom`, // Scrolling duration
-        pin: isScrollable,
-        onLeave: handleRefresh,
-        onLeaveBack: handleRefresh
-      });
-  }
-
-  function handleToggle(index) {
-    if (activeIndex === index) return;
-
-    nextStepImage(index);
-    handleStepClasses(index);
-
-    activeIndex = index;
-  }
-
-  // Manejar la completación de la animación
-  function nextStepImage(stepIndex) {
-    imagesLinks[stepIndex]?.click();
-  }
-
-  function handleStepClasses(stepIndex) {
-    const dropdownButton = dropdownCollection[stepIndex].querySelector(
-      ".w-dropdown-toggle"
-    );
-    const dropdownContainer = dropdownCollection[stepIndex].querySelector(
-      ".w-dropdown-list"
-    );
-    [dropdownButton, dropdownContainer].forEach((element) => {
-      element?.classList.toggle(ACTIVE_CLASS);
-    });
-  }
-
-  // Manejar la completación de la animación
-  function scrollToStep(stepIndex) {
-    const totalLengh = scroller.end - scroller.start;
-    // Scroll amount depending the index of the active step
-    const scrollLenght =
-      stepIndex == 0
-        ? scroller.start
-        : scroller.start + (totalLengh / listLength) * stepIndex;
-
-    // Scroll To animation
-    gsap.to(window, {
-      scrollTo: {
-        y: scrollLenght
-      }
-    });
-  }
-
-  function handleRefresh() {
-    // Espera a que la última animacion de la Timeline sea ejecutada para refrescar el Timeline
-    setTimeout(() => {
-      scroller.refresh();
-    }, 500);
-  }
-}
-
-function scrollHeadingAnimation() {
-  const section = document.querySelector(".cl-section.is-finance-presentation");
-
-  if (!section) return;
-
-  const elements = {
-    pinElement: section.querySelector(
-      ".cl-section_wrapper.is-finance-presentation"
-    ),
-    images: [
-      ...section.querySelectorAll(".cl-finance-presentation_image-wrapper")
-    ]
-  };
-  let masterTl = gsap.timeline();
-
-  if (!section) return;
-
-  masterTl.add(animateParagraph());
-  startScrollTrigger();
-
-  function startScrollTrigger() {
-    return ScrollTrigger.create({
-      trigger: section,
-      pin: elements.pinElement,
-      start: "top top",
-      end: `bottom bottom`
-    });
-  }
-
-  function animateParagraph() {
-    const paragraph = section.querySelector(
-      ".cl-section_header.is-finance-presentation"
-    );
-    const paragraphChild = [...section.querySelectorAll("span")];
-    const cledaraSpanIndex = paragraphChild.length - 1;
-
-    gsap.set(paragraphChild[cledaraSpanIndex], {
-      color: "var(--brand-color--primary)"
-    });
-    gsap.set(elements.images, {
-      opacity: 1
-    });
-
-    function animation() {
-      const config = {
-        scrollVelocity: 5,
-        animDuration: 3
-      };
-
-      gsap.set(section, {
-        height: `${100 * config.scrollVelocity}vh`
-      });
-
-      const timeline = gsap.timeline({
-        scrollTrigger: {
-          trigger: section,
-          scrub: 1,
-          start: "top top",
-          end: `bottom bottom`,
-          animation: animation
-        },
-        defaults: {
-          stagger: config.animDuration,
-          duration: config.animDuration
-        }
-      });
-
-      timeline
-        .from(
-          paragraph,
-          {
-            yPercent: 150,
-            duration: 10
-          },
-          "initial"
-        )
-        .from(
-          paragraphChild,
-          {
-            opacity: (index) => (index === cledaraSpanIndex ? 0 : 0.2),
-            snap: 1
-          },
-          "initial"
-        )
-        .from(elements.images, {
-          y: () => 150 * 2,
-          opacity: 0
-        })
-        .to(
-          paragraphChild,
-          {
-            opacity: (index) => (index === cledaraSpanIndex ? 1 : 0.2)
-          },
-          `initial+=${config.animDuration}`
-        );
-    }
-
-    return animation;
-  }
-}
-
+/* STEP LINE */
 function stepLine() {
   const component = document.querySelector(".cl-step-line_wrapper");
 
@@ -793,6 +270,7 @@ function stepLine() {
   }
 }
 
+/* SWIPER SLIDER */
 function initSwiperSlider() {
   const sliders = [...document.querySelectorAll(".swiper")];
   const config = {
@@ -846,10 +324,6 @@ function initSwiperSlider() {
       slideWrapper.style[CSS_PROPERTY] = 0;
 
       const swiper = new Swiper(slide, { ...slideConfig });
-
-      // window.__swiper__ = swiper;
-
-      console.log({ swiper });
 
       return swiper;
     });
@@ -920,7 +394,7 @@ function initStickyConfig() {
   }
 }
 
-/* STICKY FEATRUES*/
+/* STICKY FEATURES*/
 function stickyFeatures() {
   const component = document.querySelector(".cl-sticky-features");
 
@@ -961,20 +435,6 @@ function stickyFeatures() {
       });
     };
 
-    const handleImageExit = (index) => {
-      const isFirst = index === 0;
-      const isLast = index === elements.featuresItems.length - 1;
-
-      elements.featuresImages[index].classList.toggle(
-        config.activeClass,
-        isFirst
-      );
-      elements.featuresImages[index].classList.toggle(
-        config.activeClass,
-        isLast
-      );
-    };
-
     elements.featuresItems.forEach((item, index) => {
       gsap.from(item, {
         scrollTrigger: {
@@ -991,42 +451,6 @@ function stickyFeatures() {
 }
 
 /* UTILS FUNCTIONS */
-function handleMouseTracking(event) {
-  const { currentTarget: target } = event;
-
-  const rect = target.getBoundingClientRect(),
-    x = event.clientX - rect.left,
-    y = event.clientY - rect.top;
-
-  target.style.setProperty("--mouse-x", `${x}px`);
-  target.style.setProperty("--mouse-y", `${y}px`);
-}
-
-function wrapChildrenInDiv(node, element) {
-  // Create a new <div> element
-  var div = document.createElement(element);
-
-  // Clone the node's children into the new <div> element
-  while (node.firstChild) {
-    div.appendChild(node.firstChild);
-  }
-
-  // Append the new <div> element to the original node
-  node.appendChild(div);
-}
-
-function cleanupClasses(element, className) {
-  // Remove the class from the target element
-  element.classList.remove(className);
-
-  // Remove the class from the element's siblings
-  const siblings = Array.from(element.parentNode.children);
-  siblings.forEach((sibling) => {
-    if (sibling !== element) {
-      sibling.classList.remove(className);
-    }
-  });
-}
 
 function clamp(min, inBetween, max) {
   let result = inBetween;
@@ -1057,40 +481,6 @@ function extractDatasetProperties(element) {
   return !emptyObject ? datasetObject : null;
 }
 
-function getCenterFromViewport(targetElement, container) {
-  if (!targetElement) return;
-
-  // Get the bounding client rect of the element
-  const rect = targetElement.getBoundingClientRect();
-
-  // Calculate the center of the element
-  const elementCenterX = rect.left + rect.width / 2;
-  // const elementCenterY = targetElement.scrollHeight + rect.height / 2;
-  const elementCenterY = rect.top + rect.height / 2;
-  let viewportCenterX;
-  let viewportCenterY;
-
-  if (container) {
-    viewportCenterX = container.clientWidth / 2;
-    viewportCenterY = container.clientHeight / 2;
-  } else {
-    // Calculate the center of the viewport
-    viewportCenterX = window.innerWidth / 2;
-    viewportCenterY = window.innerHeight / 2;
-  }
-
-  const distanceX = (elementCenterX - viewportCenterX) * -1;
-  const distanceY = (elementCenterY - viewportCenterY) * -1;
-
-  return { distanceX, distanceY };
-}
-
-function avoidPageScroll(condition) {
-  condition
-    ? (document.body.style.overflow = "hidden")
-    : document.body.style.removeProperty("overflow");
-}
-
 function debounce(func, delay) {
   let timeoutId;
 
@@ -1112,27 +502,3 @@ function toggleStyleProperty(element, [property, value], condition) {
     ? element.style.setProperty(property, value)
     : element.style.removeProperty(property);
 }
-
-function findMaxSizeElement(arr) {
-  // Check if the array is empty
-  if (arr.length === 0) {
-    return null; // or handle the empty array case as needed
-  }
-
-  // Initialize variables to track the maximum size and the corresponding element
-  let maxSize = arr[0].clientHeight; // Assuming the first element has the size property
-  let maxElement = arr[0];
-
-  // Iterate through the array starting from the second element
-  for (let i = 1; i < arr.length; i++) {
-    // Assuming each element in the array has a 'length' property
-    if (arr[i].clientHeight > maxSize) {
-      maxSize = arr[i].clientHeight;
-      maxElement = arr[i];
-    }
-  }
-
-  return { maxSize, maxElement };
-}
-
-let snap50 = gsap.utils.snap(50);
