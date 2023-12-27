@@ -9,6 +9,7 @@ This project contains various functions and animations for a web page. It uses t
    - [Animation Initialization](#init)
    - [Testimonials Navigation](#testimonialsNavigation)
    - [Infinite Marquee](#initMarquee)
+   - [Step Guide](#stepGuide)
    - [Step Line Animation](#stepLine)
    - [Sticky Features](#stickyFeatures)
    - [Swiper Slider Initialization ](#initSwiperSlider)
@@ -32,6 +33,9 @@ The `testimonialsNavigation` function manages the navigation within the testimon
 
 ### `initMarquee`
 The `initMarquee` function creates an infinite marquee effect for a specified element. It adjusts the position of the marquee content based on the screen width, creating a continuous scrolling effect.
+
+### `stepsGuide`
+The `stepLine` function animates a step guide component. It provides an interactive and visually appealing user experience as users navigate through the step guide.
 
 ### `stepLine`
 The `stepLine` function animates a step line component. It grays out and fades in each step item on initial load and adjusts the length of the line based on scroll position using ScrollTrigger.

@@ -10,6 +10,7 @@ function init() {
   testimonialsNavigation();
   initMarquee();
   stickyFeatures();
+  stepsGuide();
   stepLine();
   initSwiperSlider();
 }
@@ -201,6 +202,145 @@ function initMarquee() {
     // Reset properties and stop animation for larger screens
     resetProps();
   });
+}
+
+/* STEP GUIDE */
+function stepsGuide() {
+  const stepsList = document.querySelector(".cl-section.is-step-guide");
+
+  if (!stepsList) return;
+
+  const props = {
+    container: stepsList.closest(".cl-content_wrapper.is-step-guide"),
+    list: stepsList.closest(".cl-list.is-step-guide"),
+    dropdownCollection: [
+      ...stepsList.querySelectorAll(".cl-dropdown.is-steps-list")
+    ], // Obtener una colección de elementos de desplegable
+    buttons: stepsList.querySelectorAll(".w-dropdown-toggle"),
+    lists: stepsList.querySelectorAll(".w-dropdown-list"),
+    listLength: [...stepsList.querySelectorAll(".cl-dropdown.is-steps-list")]
+      .length, // Obtener la longitud de la lista
+    imagesLinks: [
+      ...stepsList.closest("section").querySelectorAll(".w-tab-menu a")
+    ],
+    activeIndex: 0, // Índice activo inicial
+    ACTIVE_CLASS: "w--open", // Clase activa para el desplegable abierto
+    scroller: null,
+    mediaQuery: gsap.matchMedia(),
+    isScrollable: true
+  };
+
+  let {
+    container,
+    dropdownCollection,
+    listLength,
+    activeIndex,
+    ACTIVE_CLASS,
+    imagesLinks,
+    scroller,
+    mediaQuery,
+    isScrollable
+  } = props;
+
+  init(); // Inicializar
+
+  function init() {
+    isScrollable = JSON.parse(stepsList.dataset.scroll);
+    mediaQuery.add("(min-width: 991px)", animate);
+  }
+
+  function animate() {
+    const lengthDuration = listLength * window.innerHeight * 0.8;
+
+    dropdownCollection.forEach((dropdown, index) => {
+      const scrollLenght = lengthDuration / listLength;
+      const scrollStart = Math.round(index == 0 ? 0 : scrollLenght * index);
+      const scrollEnds = Math.round(
+        index == 0 ? scrollLenght : scrollStart + scrollLenght
+      );
+
+      dropdown;
+
+      if (isScrollable) {
+        dropdown.style.pointerEvents = "none";
+        dropdown.parentElement.onclick = () => scrollToStep(index);
+
+        gsap.to(dropdown, {
+          scrollTrigger: {
+            id: `dropdown-${index}`,
+            trigger: container,
+            start: `top+=${scrollStart}px center`,
+            end: `top+=${scrollEnds}px center`,
+            onToggle: () => handleToggle(index)
+          }
+        });
+      }
+
+      dropdown.parentElement.onclick = () => handleToggle(index);
+    });
+
+    // Scrolltriger creted to pin the container
+    scroller =
+      isScrollable &&
+      ScrollTrigger.create({
+        trigger: container,
+        start: `bottom+=40px bottom`,
+        end: `bottom+=${lengthDuration}px bottom`, // Scrolling duration
+        pin: isScrollable,
+        onLeave: handleRefresh,
+        onLeaveBack: handleRefresh
+      });
+  }
+
+  function handleToggle(index) {
+    if (activeIndex === index) return;
+
+    nextStepImage(index);
+    handleStepClasses(index);
+
+    activeIndex = index;
+  }
+
+  // Manejar la completación de la animación
+  function nextStepImage(stepIndex) {
+    imagesLinks[stepIndex]?.click();
+  }
+
+  function handleStepClasses(stepIndex) {
+    const dropdownButton = dropdownCollection[stepIndex].querySelector(
+      ".w-dropdown-toggle"
+    );
+    const dropdownContainer = dropdownCollection[stepIndex].querySelector(
+      ".w-dropdown-list"
+    );
+    [dropdownButton, dropdownContainer].forEach((element) => {
+      element?.classList.toggle(ACTIVE_CLASS);
+    });
+  }
+
+  // Manejar la completación de la animación
+  function scrollToStep(stepIndex) {
+    const totalLengh = scroller.end - scroller.start;
+    // Scroll amount depending the index of the active step
+    const scrollLenght =
+      stepIndex == 0
+        ? scroller.start
+        : scroller.start + (totalLengh / listLength) * stepIndex;
+
+    // Scroll To animation
+    gsap.to(window, {
+      scrollTo: {
+        y: scrollLenght
+      }
+    });
+  }
+
+  function handleRefresh() {
+    // Espera a que la última animacion de la Timeline sea ejecutada para refrescar el Timeline
+    setTimeout(() => {
+      scroller.refresh();
+    }, 500);
+  }
 }
 
 /* STEP LINE */
