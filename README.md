@@ -1,4 +1,4 @@
-# Animaitons
+# Cledara Utils
 
 This project contains various functions and animations for a web page. It uses the GreenSock Animation Platform (GSAP) and ScrollTrigger for creating smooth animations and interactions. Below is an overview of the script and its functions:
 
