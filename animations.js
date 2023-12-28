@@ -1,10 +1,11 @@
+// LIBS
+import { gsap } from "gsap";    
+import { ScrollTrigger } from "ScrollTrigger";
+import { ScrollToPlugin } from "ScrollToPlugin";
+
 window.onload = init();
 
 function init() {
-  const gsap = window.gsap;
-  const ScrollTrigger = window.ScrollTrigger;
-  const ScrollToPlugin = window.ScrollToPlugin;
-
   gsap?.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
   testimonialsNavigation();
