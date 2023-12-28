@@ -139,6 +139,18 @@ function testimonialsNavigation() {
     }
   }
 
+  // Function to handle swipe events for change slides
+  function handleSwipeEvents() {
+    $(".w-tab-content").swipe({
+      swipeLeft: function (event, direction, distance, duration, fingerCount) {
+        $(".w-tab-menu a.w--current").next("a").click();
+      },
+      swipeRight: function (event, direction, distance, duration, fingerCount) {
+        $(".w-tab-menu a.w--current").prev("a").click();
+      }
+    });
+  }
+
   // Add event listeners for mouse enter, mouse leave, and arrow clicks
   testimonialsSection.addEventListener("mouseenter", eventListener.mouseEnter);
   testimonialsSection.addEventListener("mouseleave", eventListener.mouseLeave);
