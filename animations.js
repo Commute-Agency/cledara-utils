@@ -13,6 +13,7 @@ function init() {
   stepsGuide();
   stepLine();
   initSwiperSlider();
+  initPricing();
 }
 
 /* TESTIMONIALS */
@@ -601,6 +602,32 @@ function stickyFeatures() {
         }
       });
     });
+  }
+}
+
+/* PRICING TABS */
+function initPricing() {
+  const component = document.querySelector('.cl-pricing_container');
+
+  if(component) return 
+
+  const props = {
+    actions: [...component.querySelectorAll(".cl-pricing-tab_actions form")]
+  };
+
+  init();
+
+  function init() {
+    props.actions.forEach((action) => (action.onchange = handleChange));
+  }
+
+  function handleChange(event) {
+    const selectedTargets = component.querySelectorAll(
+      `[data-w-tab='${event.srcElement.value}']`
+    );
+
+    selectedTargets.forEach((target) => target.click());
+    console.log({ value: event.srcElement.value, selectedTargets });
   }
 }
 
