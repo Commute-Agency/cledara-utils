@@ -156,6 +156,8 @@ function testimonialsNavigation() {
   testimonialsSection.addEventListener("mouseleave", eventListener.mouseLeave);
   arrows.prev.onclick = (e) => handleNavigation(e);
   arrows.next.onclick = (e) => handleNavigation(e);
+
+  handleSwipeEvents();
 }
 
 /* INFINITE MARQUEE */
