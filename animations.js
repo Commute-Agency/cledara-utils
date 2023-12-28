@@ -1,7 +1,7 @@
 // LIBS
 import { gsap } from "gsap";    
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+import { ScrollTrigger } from "ScrollTrigger";
+import { ScrollToPlugin } from "ScrollToPlugin";
 
 window.onload = init();
 
