@@ -609,7 +609,7 @@ function stickyFeatures() {
 function initPricing() {
   const component = document.querySelector('.cl-pricing_container');
 
-  if(component) return 
+  if(!component) return 
 
   const props = {
     actions: [...component.querySelectorAll(".cl-pricing-tab_actions form")]
